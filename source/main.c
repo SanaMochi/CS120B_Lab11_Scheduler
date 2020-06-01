@@ -10,14 +10,65 @@
 #include <avr/io.h>
 #ifdef _SIMULATE_
 #include "simAVRHeader.h"
+#include "../header/timer.h"
+#include "../header/bit.h"
+#include "../header/scheduler.h"
+#include "../header/keypad.h"
 #endif
 
+/*
+enum pauseButtonSM_States {pauseButton_wait, pauseButton_press, pauseButton_release };
+
+int pauseButtonSMTick(int state) {
+	unsigned char press = ~PINA & 0x01;
+
+	switch (state) {
+		case pauseButton_wait:
+			state = press == 0x01? pauseButton_press: pauseButton_wait; break;
+		case pauseButton_press:
+			state = pauseButton_release; break;
+		case pauseButton_release:
+			state = press == 0x00? pauseButton_wait: pauseButton_press; break;
+		default: state = pauseButton_wait; break;
+	}
+	switch (state) {
+		case pauseButton_wait: break;
+		case pauseButton_press:
+			pause = (pause == 0) ? 1: 0;
+			break;
+		case pauseButton_release: break;
+	}
+	return state;
+}
+*/
 int main(void) {
-    /* Insert DDR and PORT initializations */
+	unsigned char x;
+	DDRB = 0xFF; PORTB = 0x00;
+	DDRC = 0xF0; PORTC = 0x0F;
 
-    /* Insert your solution below */
-    while (1) {
+	while (1) {
+		x = GetKeypadKey();
+		switch (x) {
+			case'\0': PORTB = 0x1F; break;
+			case '1': PORTB = 0x01; break;
+			case '2': PORTB = 0x02; break;
+			case '3': PORTB = 0x03; break;
+			case '4': PORTB = 0x04; break;
+			case '5': PORTB = 0x05; break;
+			case '6': PORTB = 0x06; break;
+			case '7': PORTB = 0x07; break;
+			case '8': PORTB = 0x08; break;
+			case '9': PORTB = 0x09; break;
+			case 'A': PORTB = 0x0A; break;
+			case 'B': PORTB = 0x0B; break;
+			case 'C': PORTB = 0x0C; break;
+			case 'D': PORTB = 0x0D; break;
+			case '*': PORTB = 0x0E; break;
+			case '0': PORTB = 0x00; break;
+			case '#': PORTB = 0x0F; break;
+			default: PORTB = 0x01B; break;
 
-    }
+		}
+	}
     return 1;
 }

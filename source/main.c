@@ -1,7 +1,7 @@
 /*	Author: sana
  *  Partner(s) Name: 
  *	Lab Section:
- *	Assignment: Lab #  Exercise #
+ *	Assignment: Lab #11  Exercise #2
  *	Exercise Description: [optional - include for your own benefit]
  *
  *	I acknowledge all content contained herein, excluding template or example
@@ -14,10 +14,13 @@
 #include "../header/bit.h"
 #include "../header/scheduler.h"
 #include "../header/keypad.h"
+//#include "../header/lcd_8bit_task.h"
+#include "../header/io.h"
 #endif
 
 unsigned char x;
 unsigned char B;
+//unsigned char string[] {'C', 'S', '1', '2', '0', ' ', 'i', 's', ' ', 'L', 'e', 'g', 'e', 'n', 'd', '.', '.', '.', ' ', 'w', 'a', 'i', 't', ' '}
 
 enum keypadButtonSM_States {start};
 
@@ -59,10 +62,14 @@ int displaySMTick(int state) {
 	}
 	switch (state) {
 		case display_display:
-			output = B;
+//			output = "CS120B is Legend... wait for it DARY!";
+			LCD_ClearScreen();
+			LCD_DisplayString(1, "CS120B is cool");
 			break;
 	}
-	PORTB = output;
+//	PORTB = output;
+//	LCD_ClearScreen();
+//	LCD_DisplayString(1, "CS120B");
 	return state;
 }
 
@@ -71,18 +78,19 @@ int main(void) {
 //	DDRA = 0x00; PORTA = 0xFF;
 	DDRB = 0xFF; PORTB = 0x00;
 	DDRC = 0xF0; PORTC = 0x0F;
+	DDRD = 0xFF; PORTD = 0x00;
 
-	static task task1, task2; //task3, task4;
-	task *tasks[] = {&task1, &task2 };// &task3, &task4};
+	static task task1;//, task2 //task3, task4;
+	task *tasks[] = {&task1};//, &task2 };// &task3, &task4};
 	const unsigned short numTasks = sizeof(tasks)/sizeof(task*);
 
 	const char start = -1;
 
-	task1.state = start;
+/*	task1.state = start;
         task1.period = 10;
         task1.elapsedTime = task1.period;
         task1.TickFct = &keypadButtonSMTick;
-/*
+
 	task1.state = start;
 	task1.period = 50;
 	task1.elapsedTime = task1.period;
@@ -98,10 +106,10 @@ int main(void) {
         task3.elapsedTime= task3.period;
         task3.TickFct = &toggleLED1SMTick;
 */	
-	task2.state = start;
-	task2.period = 10;
-	task2.elapsedTime = task2.period;
-	task2.TickFct = &displaySMTick;
+	task1.state = start;
+	task1.period = 10;
+	task1.elapsedTime = task1.period;
+	task1.TickFct = &displaySMTick;
 
 	unsigned long GCD = tasks[0]->period;
 	unsigned char j;

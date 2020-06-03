@@ -16,59 +16,112 @@
 #include "../header/keypad.h"
 #endif
 
-/*
-enum pauseButtonSM_States {pauseButton_wait, pauseButton_press, pauseButton_release };
+unsigned char x;
+unsigned char B;
 
-int pauseButtonSMTick(int state) {
-	unsigned char press = ~PINA & 0x01;
+enum keypadButtonSM_States {start};
 
-	switch (state) {
-		case pauseButton_wait:
-			state = press == 0x01? pauseButton_press: pauseButton_wait; break;
-		case pauseButton_press:
-			state = pauseButton_release; break;
-		case pauseButton_release:
-			state = press == 0x00? pauseButton_wait: pauseButton_press; break;
-		default: state = pauseButton_wait; break;
-	}
-	switch (state) {
-		case pauseButton_wait: break;
-		case pauseButton_press:
-			pause = (pause == 0) ? 1: 0;
-			break;
-		case pauseButton_release: break;
+int keypadButtonSMTick(int state) {
+	x = GetKeypadKey();
+	switch (x) {
+		case'\0': B = 0x1F; break;
+		case '1': B = 0x01; break;
+       		case '2': B = 0x02; break;
+       		case '3': B = 0x03; break;
+       		case '4': B = 0x04; break;
+     		case '5': B = 0x05; break;
+		case '6': B = 0x06; break;
+		case '7': B = 0x07; break;
+      		case '8': B = 0x08; break;
+     		case '9': B = 0x09; break;
+      		case 'A': B = 0x0A; break;
+     		case 'B': B = 0x0B; break;
+      		case 'C': B = 0x0C; break;
+       		case 'D': B = 0x0D; break;
+      		case '*': B = 0x0E; break;
+    		case '0': B = 0x00; break;
+       		case '#': B = 0x0F; break;
+		default: B = 0x01B; break;
 	}
 	return state;
 }
-*/
+
+enum display_States {D_SMStart, display_display };
+
+int displaySMTick(int state) {
+	unsigned char output;
+	switch (state) {
+		case D_SMStart:
+			state = display_display;
+			break;
+		case display_display: state = display_display; break;
+		default: state = display_display; break;
+	}
+	switch (state) {
+		case display_display:
+			output = B;
+			break;
+	}
+	PORTB = output;
+	return state;
+}
+
 int main(void) {
-	unsigned char x;
+	unsigned char i;
+//	DDRA = 0x00; PORTA = 0xFF;
 	DDRB = 0xFF; PORTB = 0x00;
-	DDRC = 0xF0; PORTC = 0x0F;
+	DDRC = 0x00; PORTC = 0x1F;
+
+	static task task1, task2; //task3, task4;
+	task *tasks[] = {&task1, &task2 };// &task3, &task4};
+	const unsigned short numTasks = sizeof(tasks)/sizeof(task*);
+
+	const char start = -1;
+
+	task1.state = start;
+        task1.period = 10;
+        task1.elapsedTime = task1.period;
+        task1.TickFct = &keypadButtonSMTick;
+/*
+	task1.state = start;
+	task1.period = 50;
+	task1.elapsedTime = task1.period;
+	task1.TickFct = &pauseButtonToggleSMTick;
+	
+	task2.state = start;
+	task2.period = 500;
+	task2.elapsedTime= task2.period;
+	task2.TickFct = &toggleLED0SMTick;
+	
+	task3.state = start;
+        task3.period = 1000;
+        task3.elapsedTime= task3.period;
+        task3.TickFct = &toggleLED1SMTick;
+*/	
+	task2.state = start;
+	task2.period = 10;
+	task2.elapsedTime = task2.period;
+	task2.TickFct = &displaySMTick;
+
+	unsigned long GCD = tasks[0]->period;
+	unsigned char j;
+	for (j = 1; j < numTasks; j++) {
+		GCD = findGCD(GCD, tasks[j]->period);
+	}
+
+	TimerSet(GCD);
+	TimerOn();
 
 	while (1) {
-		x = GetKeypadKey();
-		switch (x) {
-			case'\0': PORTB = 0x1F; break;
-			case '1': PORTB = 0x01; break;
-			case '2': PORTB = 0x02; break;
-			case '3': PORTB = 0x03; break;
-			case '4': PORTB = 0x04; break;
-			case '5': PORTB = 0x05; break;
-			case '6': PORTB = 0x06; break;
-			case '7': PORTB = 0x07; break;
-			case '8': PORTB = 0x08; break;
-			case '9': PORTB = 0x09; break;
-			case 'A': PORTB = 0x0A; break;
-			case 'B': PORTB = 0x0B; break;
-			case 'C': PORTB = 0x0C; break;
-			case 'D': PORTB = 0x0D; break;
-			case '*': PORTB = 0x0E; break;
-			case '0': PORTB = 0x00; break;
-			case '#': PORTB = 0x0F; break;
-			default: PORTB = 0x01B; break;
-
+		for (i = 0; i < numTasks; i++) {
+			if (tasks[i]->elapsedTime == tasks[i]->period) {
+				tasks[i]->state = tasks[i]->TickFct(tasks[i]->state);
+				tasks[i]->elapsedTime = 0;
+			}
+			tasks[i]->elapsedTime += GCD;
 		}
+		while(!TimerFlag);
+		TimerFlag = 0;
 	}
-    return 1;
+    return 0;
 }

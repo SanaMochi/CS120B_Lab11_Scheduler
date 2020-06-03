@@ -23,7 +23,7 @@ unsigned long int findGCD(unsigned long int a, unsigned long int b)
 }
 ////////////////////////////////////////////////////////////////////////////////
 //Struct for Tasks represent a running process in our simple real-time operating system
-typedef struct _task{
+typedef struct Task{
 	// Tasks should have members that include: state, period,
 	//a measurement of elapsed time, and a function pointer.
 	signed 	 char state; 		//Task's current state

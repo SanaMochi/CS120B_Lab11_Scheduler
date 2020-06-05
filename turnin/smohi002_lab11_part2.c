@@ -1,7 +1,7 @@
 /*	Author: sana
  *  Partner(s) Name: 
  *	Lab Section:
- *	Assignment: Lab #11  Exercise #3
+ *	Assignment: Lab #11  Exercise #2
  *	Exercise Description: [optional - include for your own benefit]
  *
  *	I acknowledge all content contained herein, excluding template or example
@@ -27,6 +27,8 @@ unsigned char str_output[16];
 unsigned char max = 15;
 unsigned char j = 0;
 unsigned char k = 0;
+unsigned char l = 0;
+//unsigned char string[] {'C', 'S', '1', '2', '0', ' ', 'i', 's', ' ', 'L', 'e', 'g', 'e', 'n', 'd', '.', '.', '.', ' ', 'w', 'a', 'i', 't', ' '}
 
 enum keypadButtonSM_States {start};
 
@@ -43,18 +45,18 @@ int keypadButtonSMTick(int state) {
 		case '7': B = 0x07; break;
       		case '8': B = 0x08; break;
      		case '9': B = 0x09; break;
-      		case 'A': B = 0x11; break; //17
-     		case 'B': B = 0x12; break; //18
-      		case 'C': B = 0x13; break; //19
-       		case 'D': B = 0x14; break; //20
-      		case '*': B = 0x0E; break; //42
-    		case '0': B = 0x00; break; 
-       		case '#': B = 0x0F; break; //35
+      		case 'A': B = 0x0A; break;
+     		case 'B': B = 0x0B; break;
+      		case 'C': B = 0x0C; break;
+       		case 'D': B = 0x0D; break;
+      		case '*': B = 0x0E; break;
+    		case '0': B = 0x00; break;
+       		case '#': B = 0x0F; break;
 		default: B = 0x01B; break;
 	}
 	return state;
 }
-/*
+
 enum paginate_States {Init, beginning, middle, end};
 
 int paginateSMTick(int state) {
@@ -100,23 +102,11 @@ int paginateSMTick(int state) {
 	}
 	return state;
 }
-/*
-enum singleOutput_State {start};
 
-int singleOutputSMTick(int state) {
-	switch (state) {
-		
-	}
-	switch (state) {
-		default: break;
-	}
-	return state;
-}
-*/
 enum display_States {D_SMStart, display_display };
 
 int displaySMTick(int state) {
-	unsigned char output;
+//	unsigned char output;
 	switch (state) {
 		case D_SMStart:
 			state = display_display;
@@ -126,28 +116,11 @@ int displaySMTick(int state) {
 	}
 	switch (state) {
 		case display_display:
-			if (B != 0x1B && B != 0x1F && B != 0x0E && B != 0x0F) {
-				output = B;
-				LCD_ClearScreen();
-				LCD_WriteData(output + '0');
-			}
-			else if (B == 0x0E) {
-				output = 0x2A;
-                                LCD_ClearScreen();
-                                LCD_WriteData(output);
-			}
-			else if (B == 0x0F) {
-				output = 0x23;
-                                LCD_ClearScreen();
-                                LCD_WriteData(output);
-			}
-//			else LCD_ClearScreen();
 			break;
 	}
 //	PORTB = output;
-//	LCD_ClearScreen();
-//	LCD_WriteData(output);
-//	LCD_DisplayString(1, str_output);
+	LCD_ClearScreen();
+	LCD_DisplayString(1, str_output);
 	return state;
 }
 
@@ -160,21 +133,21 @@ int main(void) {
 
 	LCD_init();
 
-	static task task1, task2;// task3; //, task4;
-	task *tasks[] = {&task1, &task2};//, &task3}; //, &task4};
+	static task task1, task2; //task3, task4;
+	task *tasks[] = {&task1, &task2 };// &task3, &task4};
 	const unsigned short numTasks = sizeof(tasks)/sizeof(task*);
 
 	const char start = -1;
 
-	task1.state = start;
+/*	task1.state = start;
         task1.period = 10;
         task1.elapsedTime = task1.period;
-        task1.TickFct = &keypadButtonSMTick;
-
-/*	task2.state = start;
-	task2.period = 1000;
-	task2.elapsedTime = task2.period;
-	task2.TickFct = &singleOutputSMTick;
+        task1.TickFct = &keypadButtonSMTick;/
+*/
+	task1.state = start;
+	task1.period = 1000;
+	task1.elapsedTime = task1.period;
+	task1.TickFct = &paginateSMTick;
 	
 /*	task2.state = start;
 	task2.period = 500;
@@ -187,7 +160,7 @@ int main(void) {
         task3.TickFct = &toggleLED1SMTick;
 */	
 	task2.state = start;
-	task2.period = 10;
+	task2.period = 1000;
 	task2.elapsedTime = task2.period;
 	task2.TickFct = &displaySMTick;
 

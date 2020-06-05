@@ -8,6 +8,7 @@
  *	code, is my own original work.
  */
 #include <avr/io.h>
+#include <string.h>
 #ifdef _SIMULATE_
 #include "simAVRHeader.h"
 #include "../header/timer.h"
@@ -20,6 +21,13 @@
 
 unsigned char x;
 unsigned char B;
+const char* msg = "CS120B is legend... wait for it DARY!";
+const char* blank = "                ";
+unsigned char str_output[16];
+unsigned char max = 15;
+unsigned char j = 0;
+unsigned char k = 0;
+unsigned char l = 0;
 //unsigned char string[] {'C', 'S', '1', '2', '0', ' ', 'i', 's', ' ', 'L', 'e', 'g', 'e', 'n', 'd', '.', '.', '.', ' ', 'w', 'a', 'i', 't', ' '}
 
 enum keypadButtonSM_States {start};
@@ -49,10 +57,60 @@ int keypadButtonSMTick(int state) {
 	return state;
 }
 
+enum paginate_States {Init, beginning, middle, end};
+
+int paginateSMTick(int state) {
+	switch (state) {
+	//	case start:
+	//		j = 0x00;
+	//		k = 0x00;
+	//		l = 0x00;
+		case Init:
+			memset(str_output, " ", 16);
+			break;
+		case beginning:
+			if (j < 16) state = beginning;
+			else { state = middle;}// j--;}
+			break;
+		case middle:
+			if (k < 22) state = middle;
+			else state = end;
+			break;
+		case end:
+			if (k < 37 && j > 0) state = end;
+			else {
+				state = beginning;
+				memset(str_output, " ", 16);
+				j = 0;
+				k = 0;
+			}
+			break;
+		default: 	
+			state = beginning;
+			break;
+	}
+	switch (state) {
+		case Init: break;
+		case beginning: 	
+			strncat(str_output, msg + (j++), 1);
+			break;
+		case middle:
+			memset(str_output, 0, 16);
+			strncpy(str_output, msg + (k++), 16);
+			break;
+		case end:
+			strncpy(str_output, msg + (k++), j--);
+			strncat(str_output, " ", 1);
+			break;
+		default: break;
+	}
+	return state;
+}
+
 enum display_States {D_SMStart, display_display };
 
 int displaySMTick(int state) {
-	unsigned char output;
+//	unsigned char output;
 	switch (state) {
 		case D_SMStart:
 			state = display_display;
@@ -62,14 +120,14 @@ int displaySMTick(int state) {
 	}
 	switch (state) {
 		case display_display:
-//			output = "CS120B is Legend... wait for it DARY!";
-			LCD_ClearScreen();
-			LCD_DisplayString(1, "CS120B is cool");
+//			str_output;
+//			LCD_ClearScreen();
+//			LCD_DisplayString(1, msg);
 			break;
 	}
 //	PORTB = output;
-//	LCD_ClearScreen();
-//	LCD_DisplayString(1, "CS120B");
+	LCD_ClearScreen();
+	LCD_DisplayString(1, str_output);
 	return state;
 }
 
@@ -80,8 +138,10 @@ int main(void) {
 	DDRC = 0xF0; PORTC = 0x0F;
 	DDRD = 0xFF; PORTD = 0x00;
 
-	static task task1;//, task2 //task3, task4;
-	task *tasks[] = {&task1};//, &task2 };// &task3, &task4};
+	LCD_init();
+
+	static task task1, task2; //task3, task4;
+	task *tasks[] = {&task1, &task2 };// &task3, &task4};
 	const unsigned short numTasks = sizeof(tasks)/sizeof(task*);
 
 	const char start = -1;
@@ -89,14 +149,14 @@ int main(void) {
 /*	task1.state = start;
         task1.period = 10;
         task1.elapsedTime = task1.period;
-        task1.TickFct = &keypadButtonSMTick;
-
+        task1.TickFct = &keypadButtonSMTick;/
+*/
 	task1.state = start;
-	task1.period = 50;
+	task1.period = 1000;
 	task1.elapsedTime = task1.period;
-	task1.TickFct = &pauseButtonToggleSMTick;
+	task1.TickFct = &paginateSMTick;
 	
-	task2.state = start;
+/*	task2.state = start;
 	task2.period = 500;
 	task2.elapsedTime= task2.period;
 	task2.TickFct = &toggleLED0SMTick;
@@ -106,10 +166,10 @@ int main(void) {
         task3.elapsedTime= task3.period;
         task3.TickFct = &toggleLED1SMTick;
 */	
-	task1.state = start;
-	task1.period = 10;
-	task1.elapsedTime = task1.period;
-	task1.TickFct = &displaySMTick;
+	task2.state = start;
+	task2.period = 1000;
+	task2.elapsedTime = task2.period;
+	task2.TickFct = &displaySMTick;
 
 	unsigned long GCD = tasks[0]->period;
 	unsigned char j;

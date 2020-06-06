@@ -21,15 +21,12 @@
 
 unsigned char x;
 unsigned char B;
-const char* msg = "CS120B is legend... wait for it DARY!";
-const char* blank = "                ";
+const char* msg = "                CS120B is legend... wait for it DARY!";
 unsigned char str_output[16];
 unsigned char max = 15;
 unsigned char j = 0;
 unsigned char k = 0;
-unsigned char l = 0;
-//unsigned char string[] {'C', 'S', '1', '2', '0', ' ', 'i', 's', ' ', 'L', 'e', 'g', 'e', 'n', 'd', '.', '.', '.', ' ', 'w', 'a', 'i', 't', ' '}
-
+//unsigned char l* = &str_output + 16;
 enum keypadButtonSM_States {start};
 
 int keypadButtonSMTick(int state) {
@@ -57,26 +54,25 @@ int keypadButtonSMTick(int state) {
 	return state;
 }
 
-enum paginate_States {Init, beginning, middle, end};
+enum paginate_States {beginning, middle, end};
 
 int paginateSMTick(int state) {
 	switch (state) {
-		case Init:
-			memset(str_output, " ", 16);
-			break;
 		case beginning:
-			if (j < 16) state = beginning;
-			else { state = middle;}// j--;}
+			state = middle;
 			break;
 		case middle:
-			if (k < 22) state = middle;
-			else state = end;
+			if (k < 38) state = middle;
+			else {
+				state = end;
+				j--; k++;
+			}
 			break;
 		case end:
-			if (k < 37 && j > 0) state = end;
+			if (k < 54 && j > 0) state = end;
 			else {
 				state = beginning;
-				memset(str_output, " ", 16);
+				memset(str_output, 0, 16);
 				j = 0;
 				k = 0;
 			}
@@ -86,17 +82,16 @@ int paginateSMTick(int state) {
 			break;
 	}
 	switch (state) {
-		case Init: break;
-		case beginning: 	
-			strncat(str_output, msg + (j++), 1);
+		case beginning: 
+			strncat(str_output, msg, 16);
 			break;
 		case middle:
 			memset(str_output, 0, 16);
 			strncpy(str_output, msg + (k++), 16);
 			break;
 		case end:
+			strncat(str_output, 0, 1);
 			strncpy(str_output, msg + (k++), j--);
-			strncat(str_output, " ", 1);
 			break;
 		default: break;
 	}
@@ -145,7 +140,7 @@ int main(void) {
         task1.TickFct = &keypadButtonSMTick;/
 */
 	task1.state = start;
-	task1.period = 1000;
+	task1.period = 500;
 	task1.elapsedTime = task1.period;
 	task1.TickFct = &paginateSMTick;
 	
@@ -160,7 +155,7 @@ int main(void) {
         task3.TickFct = &toggleLED1SMTick;
 */	
 	task2.state = start;
-	task2.period = 1000;
+	task2.period = 500;
 	task2.elapsedTime = task2.period;
 	task2.TickFct = &displaySMTick;
 

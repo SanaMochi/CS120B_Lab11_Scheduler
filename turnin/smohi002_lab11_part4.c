@@ -22,10 +22,7 @@
 unsigned char x;
 unsigned char B;
 const char* msg = "Congratulations!";
-//unsigned char str_output[16] = msg;
-unsigned char max = 15;
 unsigned char j = 1;
-unsigned char k = 0;
 
 enum keypadButtonSM_States {start};
 
@@ -49,40 +46,31 @@ int keypadButtonSMTick(int state) {
       		case '*': B = 0x0E; break;
     		case '0': B = 0x00; break;
        		case '#': B = 0x0F; break;
-		default: B = 0x01B; break;
+		default: B = 0x1B; break;
 	}
 	return state;
 }
 
-enum replace_States {beginning};
-
-int replaceSMTick(int state) {
-	switch (state) {
-		case beginning:
-			break;
-		default: 	
-			state = beginning;
-			break;
-	}
-	switch (state) {
-		case beginning: 
-			break;
-		default: break;
-	}
-	return state;
-}
-
-enum display_States {init, display_display };
+enum display_States {init, wait, display_display, held};
 
 int displaySMTick(int state) {
 	unsigned char output;
 	switch (state) {
 		case init:
-			state = display_display;
+//			state = display_display;
+			state = wait;
+			break;
+		case wait:
+			if (B != 0x1F && B != 0x1B) state = display_display;
+			else state = wait;
 			break;
 		case display_display: 
-			state = display_display; 
-//			if (j >= 17) j = 0;
+//			state = display_display;
+			state = held;
+			break;
+		case held:
+			if (B != 0x1F && B != 0x1B) state = held;
+			else state = wait;
 			break;
 		default: 
 			state = init; 
@@ -92,9 +80,10 @@ int displaySMTick(int state) {
 		case init:
 			LCD_DisplayString(1, msg);
 			break;
+		case wait: break;
 		case display_display:
 			if (j >= 17) j = 1;
-			if (B != 0x1B && B != 0x1F && B != 0x0E && B!= 0x0F) { 
+			if (B != 0x0E && B!= 0x0F) { 
 				LCD_Cursor(j++);
 				output = B;
 			}
@@ -106,17 +95,14 @@ int displaySMTick(int state) {
 				LCD_Cursor(j++);
 				output = 0x23;
 			}
-			if (B != 0x1B && B != 0x1F) {
-				if (B == 0x0E || B == 0x0F) {
-					LCD_WriteData(output);
-//					if (j >= 17) j = 0;
-				}
-				else {
-					LCD_WriteData(output + '0');
-//					if (j >= 17) j = 0;
-				}
+			if (B == 0x0E || B == 0x0F) {
+				LCD_WriteData(output);
+			}
+			else {
+				LCD_WriteData(output + '0');
 			}
 			break;
+		case held: break;
 	}
 //	PORTB = output;
 	return state;
@@ -130,8 +116,8 @@ int main(void) {
 
 	LCD_init();
 
-	static task task1, task2, task3; //, task4;
-	task *tasks[] = {&task1, &task2, &task3}; //, &task4};
+	static task task1, task2;//, task3; //, task4;
+	task *tasks[] = {&task1, &task2};//, &task3}; //, &task4};
 	const unsigned short numTasks = sizeof(tasks)/sizeof(task*);
 
 	const char start = -1;
@@ -140,9 +126,9 @@ int main(void) {
 	task1.period = 10;
         task1.elapsedTime = task1.period;
         task1.TickFct = &keypadButtonSMTick;
-
+/*
 	task2.state = start;
-	task2.period = 300;
+	task2.period = 10;
 	task2.elapsedTime = task2.period;
 	task2.TickFct = &replaceSMTick;
 	
@@ -152,14 +138,14 @@ int main(void) {
 	task2.TickFct = &toggleLED0SMTick;
 	
 	task3.state = start;
-        task3.period = 1000;
+        task3.period = 10;
         task3.elapsedTime= task3.period;
-        task3.TickFct = &toggleLED1SMTick;
+        task3.TickFct = &displaySMTick;
 */	
-	task3.state = start;
-	task3.period = 300;
-	task3.elapsedTime = task3.period;
-	task3.TickFct = &displaySMTick;
+	task2.state = start;
+	task2.period = 10;
+	task2.elapsedTime = task2.period;
+	task2.TickFct = &displaySMTick;
 
 	unsigned long GCD = tasks[0]->period;
 	unsigned char j;

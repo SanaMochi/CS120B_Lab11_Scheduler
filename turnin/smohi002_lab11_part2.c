@@ -26,7 +26,6 @@ unsigned char str_output[16];
 unsigned char max = 15;
 unsigned char j = 0;
 unsigned char k = 0;
-//unsigned char l* = &str_output + 16;
 enum keypadButtonSM_States {start};
 
 int keypadButtonSMTick(int state) {
@@ -134,26 +133,11 @@ int main(void) {
 
 	const char start = -1;
 
-/*	task1.state = start;
-        task1.period = 10;
-        task1.elapsedTime = task1.period;
-        task1.TickFct = &keypadButtonSMTick;/
-*/
 	task1.state = start;
 	task1.period = 500;
 	task1.elapsedTime = task1.period;
 	task1.TickFct = &paginateSMTick;
 	
-/*	task2.state = start;
-	task2.period = 500;
-	task2.elapsedTime= task2.period;
-	task2.TickFct = &toggleLED0SMTick;
-	
-	task3.state = start;
-        task3.period = 1000;
-        task3.elapsedTime= task3.period;
-        task3.TickFct = &toggleLED1SMTick;
-*/	
 	task2.state = start;
 	task2.period = 500;
 	task2.elapsedTime = task2.period;

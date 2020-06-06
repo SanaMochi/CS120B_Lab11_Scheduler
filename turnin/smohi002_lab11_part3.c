@@ -54,65 +54,7 @@ int keypadButtonSMTick(int state) {
 	}
 	return state;
 }
-/*
-enum paginate_States {Init, beginning, middle, end};
 
-int paginateSMTick(int state) {
-	switch (state) {
-		case Init:
-			memset(str_output, " ", 16);
-			break;
-		case beginning:
-			if (j < 16) state = beginning;
-			else { state = middle;}// j--;}
-			break;
-		case middle:
-			if (k < 22) state = middle;
-			else state = end;
-			break;
-		case end:
-			if (k < 37 && j > 0) state = end;
-			else {
-				state = beginning;
-				memset(str_output, " ", 16);
-				j = 0;
-				k = 0;
-			}
-			break;
-		default: 	
-			state = beginning;
-			break;
-	}
-	switch (state) {
-		case Init: break;
-		case beginning: 	
-			strncat(str_output, msg + (j++), 1);
-			break;
-		case middle:
-			memset(str_output, 0, 16);
-			strncpy(str_output, msg + (k++), 16);
-			break;
-		case end:
-			strncpy(str_output, msg + (k++), j--);
-			strncat(str_output, " ", 1);
-			break;
-		default: break;
-	}
-	return state;
-}
-/*
-enum singleOutput_State {start};
-
-int singleOutputSMTick(int state) {
-	switch (state) {
-		
-	}
-	switch (state) {
-		default: break;
-	}
-	return state;
-}
-*/
 enum display_States {D_SMStart, display_display };
 
 int displaySMTick(int state) {
@@ -141,19 +83,13 @@ int displaySMTick(int state) {
                                 LCD_ClearScreen();
                                 LCD_WriteData(output);
 			}
-//			else LCD_ClearScreen();
 			break;
 	}
-//	PORTB = output;
-//	LCD_ClearScreen();
-//	LCD_WriteData(output);
-//	LCD_DisplayString(1, str_output);
 	return state;
 }
 
 int main(void) {
 	unsigned char i;
-//	DDRA = 0x00; PORTA = 0xFF;
 	DDRB = 0xFF; PORTB = 0x00;
 	DDRC = 0xF0; PORTC = 0x0F;
 	DDRD = 0xFF; PORTD = 0x00;
@@ -171,21 +107,6 @@ int main(void) {
         task1.elapsedTime = task1.period;
         task1.TickFct = &keypadButtonSMTick;
 
-/*	task2.state = start;
-	task2.period = 1000;
-	task2.elapsedTime = task2.period;
-	task2.TickFct = &singleOutputSMTick;
-	
-/*	task2.state = start;
-	task2.period = 500;
-	task2.elapsedTime= task2.period;
-	task2.TickFct = &toggleLED0SMTick;
-	
-	task3.state = start;
-        task3.period = 1000;
-        task3.elapsedTime= task3.period;
-        task3.TickFct = &toggleLED1SMTick;
-*/	
 	task2.state = start;
 	task2.period = 10;
 	task2.elapsedTime = task2.period;
